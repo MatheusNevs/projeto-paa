@@ -80,6 +80,10 @@ cp .env.example .env
 # Edite o .env conforme necessário
 ```
 
+> **⚠️ IMPORTANTE:** A pasta `adapters/` não está incluída no repositório devido ao tamanho dos arquivos (160MB). 
+> Você precisa obter os adapters LoRA treinados e colocá-los na pasta `ia-server/adapters/` antes de executar o servidor.
+> Os adapters devem conter os arquivos: `adapter_config.json`, `adapter_model.safetensors`, e arquivos do tokenizer.
+
 **Conteúdo do `.env`:**
 ```env
 # Caminhos
