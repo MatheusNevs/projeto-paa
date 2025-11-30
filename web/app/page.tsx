@@ -68,6 +68,23 @@ export default function Home() {
     setMessages((prev) => [...prev, loadingMessage]);
 
     try {
+      // Preparar histórico de mensagens (excluindo loading e mensagem inicial)
+      const messageHistory = messages
+        .filter(msg => !msg.loading && msg.id !== '0')
+        .map(msg => ({
+          role: msg.role,
+          content: msg.content
+        }));
+
+      // Adicionar mensagem atual do usuário
+      messageHistory.push({
+        role: 'user',
+        content: trimmedInput
+      });
+
+      // Limitar às últimas 10 mensagens (5 pares de pergunta/resposta)
+      const recentHistory = messageHistory.slice(-10);
+
       // Fazer requisição para API
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -75,8 +92,8 @@ export default function Home() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: trimmedInput,
-          max_tokens: 5120,
+          messages: recentHistory,
+          max_tokens: 512,
           temperature: 0.7,
         }),
       });
@@ -282,9 +299,19 @@ export default function Home() {
               )}
             </button>
           </form>
-          <div className="flex items-center gap-2 mt-3 text-sm text-slate-400">
-            <span>💡</span>
-            <span>Ex: "Crie uma função que calcula a sequência de Fibonacci" ou "Faça um web scraper"</span>
+          <div className="flex items-center justify-between mt-3">
+            <div className="flex items-center gap-2 text-sm text-slate-400">
+              <span>💡</span>
+              <span>Ex: "Crie uma função que calcula a sequência de Fibonacci" ou "Faça um web scraper"</span>
+            </div>
+            {messages.length > 1 && (
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+                <span>{Math.max(0, messages.filter(m => !m.loading && m.id !== '0').length)} mensagens no contexto</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

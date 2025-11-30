@@ -129,12 +129,13 @@ def load_model():
 # GERAÇÃO DE CÓDIGO
 # ============================================
 
-def generate_code(prompt: str, max_tokens: int = None, temperature: float = None) -> Dict[str, Any]:
+def generate_code(messages: list = None, prompt: str = None, max_tokens: int = None, temperature: float = None) -> Dict[str, Any]:
     """
-    Gera código Python a partir de um prompt
+    Gera código Python a partir de um prompt ou histórico de mensagens
     
     Args:
-        prompt: Instrução em linguagem natural
+        messages: Lista de mensagens no formato [{"role": "user"/"assistant", "content": "..."}]
+        prompt: Instrução única (retrocompatibilidade)
         max_tokens: Máximo de tokens a gerar
         temperature: Controle de criatividade (0-1)
     
@@ -144,7 +145,6 @@ def generate_code(prompt: str, max_tokens: int = None, temperature: float = None
     if not MODEL_LOADED:
         return {
               "success": False,
-
               "error": "Modelo não carregado",
               "code": ""
           }
@@ -153,14 +153,30 @@ def generate_code(prompt: str, max_tokens: int = None, temperature: float = None
         max_tokens = max_tokens or MAX_TOKENS
         temperature = temperature or TEMPERATURE
         
-        logger.info(f"📝 Gerando código para: {prompt[:50]}...")
-        
-        # Montar prompt no formato Llama
-        full_prompt = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+        # Construir prompt a partir de mensagens ou prompt único
+        if messages:
+            logger.info(f"📝 Gerando código com histórico de {len(messages)} mensagens...")
+            
+            # Montar prompt no formato Llama com histórico
+            full_prompt = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a helpful Python programming assistant. Write clear, correct, and well-commented code. Always provide working examples when appropriate.<|eot_id|>"
+            
+            for msg in messages:
+                role = msg.get("role", "user")
+                content = msg.get("content", "")
+                full_prompt += f"<|start_header_id|>{role}<|end_header_id|>\n\n{content}<|eot_id|>"
+            
+            # Adicionar header do assistente para a próxima resposta
+            full_prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
+        else:
+            # Retrocompatibilidade com prompt único
+            prompt_text = prompt or ""
+            logger.info(f"📝 Gerando código para: {prompt_text[:50]}...")
+            
+            full_prompt = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 You are a helpful Python programming assistant. Write clear, correct, and well-commented code. Always provide working examples when appropriate.<|eot_id|><|start_header_id|>user<|end_header_id|>
 
-{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+{prompt_text}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
 """
         
@@ -244,23 +260,29 @@ def generate():
         if not data:
             return jsonify({"error": "Nenhum JSON recebido"}), 400
         
+        # Suportar tanto 'messages' (novo) quanto 'prompt' (retrocompatibilidade)
+        messages = data.get('messages', [])
         prompt = data.get('prompt', '').strip()
         
-        if not prompt:
-            return jsonify({"error": "Prompt vazio"}), 400
+        if not messages and not prompt:
+            return jsonify({"error": "Nenhuma mensagem ou prompt fornecido"}), 400
         
         max_tokens = data.get('max_tokens', MAX_TOKENS)
         temperature = data.get('temperature', TEMPERATURE)
         
         # Validação
-        if len(prompt) > 2000:
-            return jsonify({"error": "Prompt muito longo (máx 2000 chars)"}), 400
-        
         if not 0 <= temperature <= 1:
             return jsonify({"error": "Temperature deve estar entre 0 e 1"}), 400
         
+        # Limitar número de mensagens (para evitar contexto muito grande)
+        if messages and len(messages) > 20:
+            messages = messages[-20:]  # Pegar apenas as 20 últimas
+        
         # Gerar código
-        result = generate_code(prompt, max_tokens, temperature)
+        if messages:
+            result = generate_code(messages=messages, max_tokens=max_tokens, temperature=temperature)
+        else:
+            result = generate_code(prompt=prompt, max_tokens=max_tokens, temperature=temperature)
         
         if result["success"]:
             return jsonify(result), 200

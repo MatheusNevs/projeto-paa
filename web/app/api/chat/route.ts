@@ -4,8 +4,14 @@ import { NextRequest, NextResponse } from 'next/server';
 const IA_SERVER_URL = process.env.IA_SERVER_URL || 'http://localhost:5000';
 const API_KEY = process.env.IA_API_KEY || 'dev-key';
 
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 interface GenerateRequest {
-  prompt: string;
+  messages?: Message[];
+  prompt?: string;
   max_tokens?: number;
   temperature?: number;
 }
@@ -48,26 +54,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { prompt, max_tokens, temperature } = body;
+    const { messages, prompt, max_tokens, temperature } = body;
 
     // Validações
-    if (!prompt || typeof prompt !== 'string') {
+    if (!messages && !prompt) {
       return NextResponse.json(
-        { error: 'Prompt é obrigatório e deve ser string' },
+        { error: 'Messages ou prompt é obrigatório' },
         { status: 400 }
       );
     }
 
-    if (prompt.trim().length === 0) {
+    if (prompt && typeof prompt !== 'string') {
+      return NextResponse.json(
+        { error: 'Prompt deve ser string' },
+        { status: 400 }
+      );
+    }
+
+    if (prompt && prompt.trim().length === 0) {
       return NextResponse.json(
         { error: 'Prompt não pode estar vazio' },
         { status: 400 }
       );
     }
 
-    if (prompt.length > 2000) {
+    if (messages && !Array.isArray(messages)) {
       return NextResponse.json(
-        { error: 'Prompt muito longo (máx 2000 caracteres)' },
+        { error: 'Messages deve ser um array' },
         { status: 400 }
       );
     }
@@ -79,22 +92,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`[API] Recebido prompt: ${prompt.substring(0, 50)}...`);
+    const logMessage = messages 
+      ? `${messages.length} mensagens no histórico`
+      : `prompt: ${prompt?.substring(0, 50)}...`;
+    
+    console.log(`[API] Recebido ${logMessage}`);
 
     // Fazer requisição para IA Server
     console.log(`[API] Enviando para IA Server: ${IA_SERVER_URL}/generate`);
+
+    const requestBody: GenerateRequest = {
+      max_tokens: max_tokens || 512,
+      temperature: temperature || 0.7,
+    };
+
+    if (messages) {
+      requestBody.messages = messages;
+    } else {
+      requestBody.prompt = prompt;
+    }
 
     const iaResponse = await fetch(`${IA_SERVER_URL}/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        prompt,
-        max_tokens: max_tokens || 512,
-        temperature: temperature || 0.7,
-      }),
-      // signal: AbortSignal.timeout(45000), // Timeout 45s
+      body: JSON.stringify(requestBody),
     });
 
     if (!iaResponse.ok) {
