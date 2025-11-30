@@ -76,7 +76,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           prompt: trimmedInput,
-          max_tokens: 512,
+          max_tokens: 5120,
           temperature: 0.7,
         }),
       });
@@ -129,73 +129,99 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-linear-to-b from-slate-900 to-slate-950">
+    <div className="flex flex-col h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Header */}
-      <div className="bg-linear-to-r from-blue-600 to-blue-700 text-white p-4 shadow-lg">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">🐍 Python Code Generator</h1>
-            <p className="text-blue-100 text-sm mt-1">Powered by Llama-3.1-8B + LoRA</p>
+      <div className="relative bg-slate-900/30 backdrop-blur-sm border-b border-slate-800">
+        <div className="absolute inset-0 bg-linear-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5"></div>
+        <div className="relative max-w-5xl mx-auto px-6 py-5">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
+                <span className="text-xl font-bold text-blue-400 font-mono">{'{ }'}</span>
+              </div>
+              <div className="h-8 w-px bg-slate-700"></div>
+            </div>
+            <div className="flex-1">
+              <h1 className="text-lg font-semibold text-white font-mono">
+                <span className="text-blue-400">python</span>
+                <span className="text-slate-500 mx-2">/</span>
+                <span className="text-slate-300">code-generator</span>
+              </h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
+                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                <span className="text-xs font-medium text-green-300">Active</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-4xl mx-auto space-y-4">
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="max-w-5xl mx-auto space-y-6">
           {messages.map((msg) => (
-            <div key={msg.id} className="mb-3">
+            <div key={msg.id} className="animate-fadeIn">
               {msg.role === 'assistant' ? (
-                <div className="space-y-3">
-                  {msg.content.includes('```') ? (
-                    // Renderizar com split de código
-                    (() => {
-                      const parts = msg.content.split('```');
-                      return parts.map((part, idx) => {
-                        // Índices pares são texto, ímpares são código
-                        const isCode = idx % 2 === 1;
-                        
-                        if (!part.trim()) return null;
-                        
-                        if (isCode) {
-                          // Remover o identificador de linguagem se existir (python, js, etc)
-                          const code = part.replace(/^\w+\s*\n/, '').trim();
-                          return (
-                            <CodeBlock
-                              key={idx}
-                              code={code}
-                              language="python"
-                              inferenceTimeMs={idx === 1 ? msg.inferenceTime : undefined}
-                            />
-                          );
-                        } else {
-                          return (
-                            <div key={idx} className="bg-slate-800 text-slate-100 px-4 py-3 rounded-lg">
-                              <div className="markdown-content text-sm">
-                                <ReactMarkdown>
-                                  {part.trim()}
-                                </ReactMarkdown>
+                <div className="flex gap-3">
+                  <div className="shrink-0 w-8 h-8 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                    <span className="text-white text-sm">🤖</span>
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    {msg.content.includes('```') ? (
+                      // Renderizar com split de código
+                      (() => {
+                        const parts = msg.content.split('```');
+                        return parts.map((part, idx) => {
+                          // Índices pares são texto, ímpares são código
+                          const isCode = idx % 2 === 1;
+                          
+                          if (!part.trim()) return null;
+                          
+                          if (isCode) {
+                            // Remover o identificador de linguagem se existir (python, js, etc)
+                            const code = part.replace(/^\w+\s*\n/, '').trim();
+                            return (
+                              <CodeBlock
+                                key={idx}
+                                code={code}
+                                language="python"
+                                inferenceTimeMs={idx === 1 ? msg.inferenceTime : undefined}
+                              />
+                            );
+                          } else {
+                            return (
+                              <div key={idx} className="bg-slate-800/50 backdrop-blur-sm text-slate-100 px-5 py-4 rounded-xl border border-slate-700/50 shadow-lg">
+                                <div className="markdown-content text-base">
+                                  <ReactMarkdown>
+                                    {part.trim()}
+                                  </ReactMarkdown>
+                                </div>
                               </div>
-                            </div>
-                          );
-                        }
-                      });
-                    })()
-                  ) : (
-                    // Sem código, apenas texto
-                    <div className="bg-slate-800 text-slate-100 px-4 py-3 rounded-lg">
-                      <div className="markdown-content text-sm">
-                        <ReactMarkdown>
-                          {msg.content}
-                        </ReactMarkdown>
+                            );
+                          }
+                        });
+                      })()
+                    ) : (
+                      // Sem código, apenas texto
+                      <div className="bg-slate-800/50 backdrop-blur-sm text-slate-100 px-5 py-4 rounded-xl border border-slate-700/50 shadow-lg">
+                        <div className="markdown-content text-base">
+                          <ReactMarkdown>
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               ) : (
-                <div className="flex justify-end">
-                  <div className="bg-blue-600 text-white px-4 py-2 rounded-lg max-w-xl">
-                    {msg.content}
+                <div className="flex justify-end gap-3">
+                  <div className="bg-linear-to-r from-blue-600 to-blue-700 text-white px-5 py-3 rounded-xl max-w-2xl shadow-lg border border-blue-500/30">
+                    <p className="text-base leading-relaxed">{msg.content}</p>
+                  </div>
+                  <div className="shrink-0 w-8 h-8 rounded-lg bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+                    <span className="text-white text-sm">👤</span>
                   </div>
                 </div>
               )}
@@ -207,34 +233,59 @@ export default function Home() {
 
       {/* Error Alert */}
       {error && (
-        <div className="bg-red-500 text-white p-3 mx-4 rounded mb-2">
-          {error}
+        <div className="mx-6 mb-4 animate-slideDown">
+          <div className="max-w-5xl mx-auto bg-red-500/10 border border-red-500/30 backdrop-blur-sm text-red-300 px-5 py-3 rounded-xl flex items-center gap-3 shadow-lg">
+            <span className="text-xl">⚠️</span>
+            <span className="text-sm font-medium">{error}</span>
+          </div>
         </div>
       )}
 
       {/* Input Area */}
-      <div className="bg-slate-800 border-t border-slate-700 p-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="bg-slate-900/80 backdrop-blur-xl border-t border-slate-700/50 shadow-2xl p-6">
+        <div className="max-w-5xl mx-auto">
           <form onSubmit={handleSendMessage} className="flex gap-3">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Descreva o código que você quer gerar..."
-              disabled={loading}
-              className="flex-1 bg-slate-700 text-white placeholder-slate-400 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 disabled:opacity-50"
-            />
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Descreva o código que você quer gerar..."
+                disabled={loading}
+                className="w-full bg-slate-800/80 text-white placeholder-slate-400 border border-slate-600/50 rounded-xl px-5 py-4 pr-12 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 transition-all shadow-lg"
+              />
+              {input && (
+                <button
+                  type="button"
+                  onClick={() => setInput('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg transition disabled:cursor-not-allowed"
+              className="bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold px-8 py-4 rounded-xl transition-all disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
             >
-              {loading ? '⏳ Gerando...' : 'Enviar'}
+              {loading ? (
+                <>
+                  <span className="animate-spin">⏳</span>
+                  <span>Gerando...</span>
+                </>
+              ) : (
+                <>
+                  <span>✨</span>
+                  <span>Enviar</span>
+                </>
+              )}
             </button>
           </form>
-          <p className="text-xs text-slate-400 mt-2">
-            💡 Ex: "Crie uma função que calcula a sequência de Fibonacci"
-          </p>
+          <div className="flex items-center gap-2 mt-3 text-sm text-slate-400">
+            <span>💡</span>
+            <span>Ex: "Crie uma função que calcula a sequência de Fibonacci" ou "Faça um web scraper"</span>
+          </div>
         </div>
       </div>
     </div>

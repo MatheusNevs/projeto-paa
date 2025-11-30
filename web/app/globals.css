@@ -8,8 +8,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,13 +22,14 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
 /* Estilos customizados para Markdown */
 .markdown-content {
   color: #e2e8f0;
-  line-height: 1.7;
+  line-height: 1.8;
+  font-size: 1rem;
 }
 
 .markdown-content strong {
@@ -44,46 +45,48 @@ body {
 .markdown-content h2,
 .markdown-content h3 {
   font-weight: 700;
-  margin-top: 1em;
-  margin-bottom: 0.5em;
+  margin-top: 1.2em;
+  margin-bottom: 0.6em;
   color: #f8fafc;
 }
 
 .markdown-content h1 {
-  font-size: 1.5em;
+  font-size: 1.75em;
   border-bottom: 2px solid #475569;
-  padding-bottom: 0.3em;
+  padding-bottom: 0.4em;
 }
 
 .markdown-content h2 {
-  font-size: 1.3em;
+  font-size: 1.5em;
 }
 
 .markdown-content h3 {
-  font-size: 1.1em;
+  font-size: 1.25em;
 }
 
 .markdown-content ul,
 .markdown-content ol {
   margin-left: 1.5em;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
 }
 
 .markdown-content li {
-  margin-bottom: 0.25em;
+  margin-bottom: 0.4em;
+  line-height: 1.7;
 }
 
 .markdown-content code {
   background-color: #334155;
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-  font-size: 0.9em;
-  font-family: 'Courier New', monospace;
+  padding: 0.25em 0.5em;
+  border-radius: 4px;
+  font-size: 0.95em;
+  font-family: var(--font-jetbrains-mono), 'Courier New', monospace;
+  font-weight: 500;
 }
 
 .markdown-content p {
-  margin-bottom: 0.75em;
+  margin-bottom: 1em;
 }
 
 .markdown-content a {
@@ -93,4 +96,53 @@ body {
 
 .markdown-content a:hover {
   color: #93c5fd;
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-slideDown {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Scrollbar customizada */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
