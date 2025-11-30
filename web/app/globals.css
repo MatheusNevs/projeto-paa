@@ -24,3 +24,73 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Estilos customizados para Markdown */
+.markdown-content {
+  color: #e2e8f0;
+  line-height: 1.7;
+}
+
+.markdown-content strong {
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.markdown-content em {
+  font-style: italic;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  font-weight: 700;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  color: #f8fafc;
+}
+
+.markdown-content h1 {
+  font-size: 1.5em;
+  border-bottom: 2px solid #475569;
+  padding-bottom: 0.3em;
+}
+
+.markdown-content h2 {
+  font-size: 1.3em;
+}
+
+.markdown-content h3 {
+  font-size: 1.1em;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin-left: 1.5em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.markdown-content li {
+  margin-bottom: 0.25em;
+}
+
+.markdown-content code {
+  background-color: #334155;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: 'Courier New', monospace;
+}
+
+.markdown-content p {
+  margin-bottom: 0.75em;
+}
+
+.markdown-content a {
+  color: #60a5fa;
+  text-decoration: underline;
+}
+
+.markdown-content a:hover {
+  color: #93c5fd;
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import CodeBlock from '@/components/CodeBlock';
 
 interface Message {
@@ -136,10 +137,6 @@ export default function Home() {
             <h1 className="text-2xl font-bold">🐍 Python Code Generator</h1>
             <p className="text-blue-100 text-sm mt-1">Powered by Llama-3.1-8B + LoRA</p>
           </div>
-          <div className="text-right text-sm text-blue-100">
-            <div>RTX 5060 Ti</div>
-            <div>CUDA 12.4</div>
-          </div>
         </div>
       </div>
 
@@ -149,11 +146,52 @@ export default function Home() {
           {messages.map((msg) => (
             <div key={msg.id} className="mb-3">
               {msg.role === 'assistant' ? (
-                <CodeBlock
-                  code={msg.content}
-                  language="python"
-                  inferenceTimeMs={msg.inferenceTime}
-                />
+                <div className="space-y-3">
+                  {msg.content.includes('```') ? (
+                    // Renderizar com split de código
+                    (() => {
+                      const parts = msg.content.split('```');
+                      return parts.map((part, idx) => {
+                        // Índices pares são texto, ímpares são código
+                        const isCode = idx % 2 === 1;
+                        
+                        if (!part.trim()) return null;
+                        
+                        if (isCode) {
+                          // Remover o identificador de linguagem se existir (python, js, etc)
+                          const code = part.replace(/^\w+\s*\n/, '').trim();
+                          return (
+                            <CodeBlock
+                              key={idx}
+                              code={code}
+                              language="python"
+                              inferenceTimeMs={idx === 1 ? msg.inferenceTime : undefined}
+                            />
+                          );
+                        } else {
+                          return (
+                            <div key={idx} className="bg-slate-800 text-slate-100 px-4 py-3 rounded-lg">
+                              <div className="markdown-content text-sm">
+                                <ReactMarkdown>
+                                  {part.trim()}
+                                </ReactMarkdown>
+                              </div>
+                            </div>
+                          );
+                        }
+                      });
+                    })()
+                  ) : (
+                    // Sem código, apenas texto
+                    <div className="bg-slate-800 text-slate-100 px-4 py-3 rounded-lg">
+                      <div className="markdown-content text-sm">
+                        <ReactMarkdown>
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="flex justify-end">
                   <div className="bg-blue-600 text-white px-4 py-2 rounded-lg max-w-xl">

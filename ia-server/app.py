@@ -190,8 +190,8 @@ You are a helpful Python programming assistant. Write clear, correct, and well-c
         full_response = TOKENIZER.decode(outputs[0], skip_special_tokens=True)
         
         # Extrair apenas a parte da resposta (pós assistant header)
-        if "assistant<|end_header_id|>" in full_response:
-            code = full_response.split("assistant<|end_header_id|>")[-1].strip()
+        if "assistant" in full_response:
+            code = full_response.split("assistant")[-1].strip()
         else:
             code = full_response
         
