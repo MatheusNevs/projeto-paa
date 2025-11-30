@@ -80,7 +80,7 @@ def load_model():
         start_time = time.time()
         
         if not check_cuda():
-            logger.error("CUDA não disponível! Usando CPU (muito lento)")
+            logger.warning("⚠️  CUDA não disponível! Usando CPU (será muito mais lento)")
             DEVICE = "cpu"
         else:
             DEVICE = "cuda"
@@ -113,9 +113,13 @@ def load_model():
         load_time = time.time() - start_time
         MODEL_LOADED = True
         
-        gpu_mem = get_gpu_memory()
         logger.info(f"✅ Modelo carregado em {load_time:.2f}s")
-        logger.info(f"💾 GPU Memory: {gpu_mem['allocated_gb']} GB alocado")
+        
+        if DEVICE == "cuda":
+            gpu_mem = get_gpu_memory()
+            logger.info(f"💾 GPU Memory: {gpu_mem['allocated_gb']} GB alocado")
+        else:
+            logger.info(f"💾 Usando CPU (será mais lento)")
         
         return True
         
@@ -185,7 +189,8 @@ You are a helpful Python programming assistant. Write clear, correct, and well-c
         inputs = TOKENIZER(full_prompt, return_tensors="pt").to(DEVICE)
         
         # Gerar
-        logger.info("⚡ Executando geração na GPU...")
+        device_name = "GPU" if DEVICE == "cuda" else "CPU"
+        logger.info(f"⚡ Executando geração na {device_name}...")
         inference_start = time.time()
         
         with torch.no_grad():
